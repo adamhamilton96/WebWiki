@@ -1,0 +1,10 @@
+<h1>Wiki Home</h1>
+<ul>
+    <li><a href="/chatserver/">Chat Server</a></li>
+    <li><a href="/sharedcanvas/">Shared Canvas</a></li>
+    <li><a href="/snakes+ladders/">Snakes and Ladders</a></li>
+    <br></br>
+    {{range .}}
+        <li><a href="/view/{{.}}">{{.}}</a></li>
+    {{end}}
+</ul>

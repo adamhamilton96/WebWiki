@@ -1,0 +1,162 @@
+<head>
+        <title>Snakes and Ladders</title>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.5.11/p5.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.5.11/addons/p5.dom.min.js"></script>
+    </head>
+    <body>
+        <p><a href="/" style="font-size: 32px">[back]</a></p>
+        <br></br>
+        <script> 
+        // TODO custom colours for own player and others
+        var socket = new WebSocket("ws://192.168.42.2:1255/snakes+laddersecho");
+        var gridSize;
+        var board = new Array();
+        var numPlayers = 0;
+        var numLadders = 0;
+        var numSnakes = 0;
+        var players = [];
+        var snakes = [];
+        var ladders = [];
+        var gameReady = false;
+        var turnTrue = false;
+    
+        socket.onopen = function() {
+            socket.send("SOCKET_OPEN");
+        };
+    
+        window.onbeforeunload = function() {
+            socket.send("SOCKET_CLOSED")
+        }
+    
+        socket.onmessage = function(e) {
+            var msg = e.data.split(" ");
+            if(msg[0] == "SETUP") {
+                // Game State
+                if(msg[1] == "true")
+                    gameReady = true;
+                else 
+                    gameReady = false;
+                gridSize = parseInt(msg[2]);
+
+                // Add Players
+                numPlayers = parseInt(msg[3]);
+                var counter = 4;
+                for(var i = 4; i < 4 + numPlayers; i++) {
+                    var player = new Player(parseInt(msg[counter]), parseInt(msg[counter + 1]));
+                    players.push(player);
+                    counter += 2;
+                }
+
+                // Add Snakes
+                numSnakes = parseInt(msg[counter]);
+                counter++;
+                var scounter = counter;
+                for(var i = scounter; i < scounter + numSnakes; i++) {
+                    var snake = new Snadder(parseInt(msg[counter]), parseInt(msg[counter + 1]), parseInt(msg[counter + 2]), parseInt(msg[counter + 3]));
+                    snakes.push(snake);
+                    counter += 4;
+                }
+
+                // Add Ladders
+                numLadders = parseInt(msg[counter]);
+                counter++;
+                var lcounter = counter;
+                for(var i = lcounter; i < lcounter + numLadders; i++) {
+                    var ladder = new Snadder(parseInt(msg[counter]), parseInt(msg[counter + 1]), parseInt(msg[counter + 2]), parseInt(msg[counter + 3]));
+                    ladders.push(ladder);
+                    counter += 4;
+                }
+
+                createGrid();
+            }
+        };
+    
+        function setup() {
+            canvas = createCanvas(401, 401);
+        }
+        
+        function createGrid() {
+	        for (i = 0; i < gridSize; i++) {
+		        board[i] = new Array();
+		        for (j = 0; j < gridSize; j++) {
+			        board[i][j] = 0;
+		        }
+    	    }
+        }
+
+        function draw() {
+            if(gameReady == true) {
+                drawGrid();
+            }
+        }
+
+        function drawGrid() {
+            var count = gridSize * gridSize;
+            textSize(8);
+            // DRAW GRID
+            for (var j = 0; j < gridSize; j++) {
+                for (var i = 0; i < gridSize; i++) {
+                    strokeWeight(1);
+                    stroke(0);
+                    fill(255);
+                    rect(i * 40, j * 40, 40, 40);
+                    // Draw Player
+                    for(var k = 0; k < numPlayers; k++) {
+                        if (i == players[k].x && j == players[k].y) {
+                        fill(255, 0, 0);
+                        ellipse(i * 40 + 20, j * 40 + 20, 20, 20); 
+                        fill(255);
+                    }
+                    }
+                    // Draw Ladder
+                    strokeWeight(6);
+                    for (var s = 0; s < snakes.length; s++) {
+                        stroke(0, 255, 0);
+                        var snake = snakes[s];
+                        line(snake.headx * 40 + 20, snake.heady * 40 + 20, snake.tailx * 40 + 20, snake.taily * 40 + 20);
+                    }
+                    for (var l = 0; l < ladders.length; l++) {
+                        stroke(0, 0, 255);
+                        var ladder = ladders[l];
+                        line(ladder.headx * 40 + 20, ladder.heady * 40 + 20, ladder.tailx * 40 + 20, ladder.taily * 40 + 20);
+                    }
+                }
+            }
+            // NUMBERING
+            for (var j = 0; j < gridSize; j++) {
+                if (j % 2 == 0) {
+                    for (var i = 0; i < gridSize; i++) { 
+                        fill(0);
+                        noStroke();
+                        text(count, i * 40 + 5, j * 40 + 15);
+                        count--;
+                    } 
+                    count++;
+                } else {
+                    for (var i = gridSize ; i > -1; i--) {
+                        fill(0);
+                        noStroke();
+                        text(count, i * 40 + 5, j * 40 + 15);
+                        count--;
+                    }
+                }
+            }
+        }
+
+        function mousePressed() {
+            
+        }
+
+        function Snadder (headx, heady, tailx, taily) {
+            this.headx = headx;
+            this.heady = heady;
+            this.tailx = tailx;
+            this.taily = taily;
+        }
+
+        function Player (x, y) {
+            this.x = x;
+            this.y = y
+        }
+        </script>
+    </body>

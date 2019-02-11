@@ -1,0 +1,71 @@
+<head>
+    <title>Chat Server</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.5.11/p5.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.5.11/addons/p5.dom.min.js"></script>
+</head>
+<body>
+    <p><a href="/" style="font-size: 32px">[back]</a></p>
+    <br></br>
+    <input id="txtName" type="text" style="font-size: 32px"/>
+    <button id="btnSetName" onclick="setName()" style="font-size: 32px">Set Name</button>
+    <br></br>
+    <input id="input" type="text" style="font-size: 32px"/>
+    <button id="btnSend" onclick="send()" style="font-size: 32px">Send</button>
+    <pre id="output" style="font-size: 32px"></pre>
+
+    <script> 
+    var socket = new WebSocket("ws://192.168.42.2:1255/echo");
+    var input = document.getElementById("input");
+    var output = document.getElementById("output");
+    var txtName = document.getElementById("txtName");
+    var btnSend = document.getElementById("btnSend");
+    var btnSetName = document.getElementById("btnSetName");
+
+    socket.onopen = function() {
+        output.innerHTML += "Status: Connected\n";
+        socket.send("SOCKET_OPEN");
+        input.disabled = true;
+        btnSend.disabled = true;
+        txtName.disabled = false;
+        btnSetName.disabled = false;
+    };
+
+    window.onbeforeunload = function() {
+        socket.send("SOCKET_CLOSED")
+        output.innerHTML = "Status: Disconnected\n";
+        txtName.value = "";
+    }
+
+    socket.onmessage = function(e) {
+        output.innerHTML += e.data + "\n";
+        fill(random(0, 255), random(0, 255), random(0, 255));
+        textSize(32);
+        text(e.data, random(0, width - 100), random(0, height - 25));
+    };
+
+    function send() {
+        socket.send(input.value);
+        input.value = "";
+    }
+
+    function setName() {
+        if (txtName != ""){
+            var strName = "SET NAME:" + txtName.value;
+            socket.send(strName);
+            input.disabled = false;
+            btnSend.disabled = false;
+            txtName.disabled = true;
+            btnSetName.disabled = true;
+        }
+    }
+
+    function setup() {
+        var cnv = createCanvas(400, 400);
+        var x = (windowWidth - width) / 2;
+        var y = (windowHeight - height) / 2;
+        cnv.position(x, y)
+        background(0);
+        rect(1, 1, width - 2, height - 2);
+    }
+    </script>
+</body>

@@ -1,0 +1,164 @@
+<head>
+    <title>Shared Canvas</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.5.11/p5.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.5.11/addons/p5.dom.min.js"></script>
+</head>
+<body>
+    <p><a href="/" style="font-size: 32px">[back]</a></p>
+    <br></br>
+    <script> 
+    var socket = new WebSocket("ws://192.168.42.2:1255/canvasecho");
+    var strColour;
+    var strSize;
+
+    var sizeSlider;
+    var btnRed;
+    var btnGreen;
+    var btnBlue;
+    var btnYellow;
+    var btnPurple;
+    var btnWhite;
+    var btnBlack;
+
+    socket.onopen = function() {
+        socket.send("SOCKET_OPEN");
+    };
+
+    window.onbeforeunload = function() {
+        socket.send("SOCKET_CLOSED")
+    }
+
+    socket.onmessage = function(e) {
+        noStroke();
+        var mPos = e.data.split(" ");
+        switch (mPos[0]) {
+            case "red": fill(255, 0, 0);
+                break;
+            case "blue": fill(0, 0, 255);
+                break;
+            case "green": fill(0, 255, 0);
+                break;
+            case "yellow": fill(255, 255, 0);
+                break;
+            case "purple": fill(204, 0, 204);
+                break;
+            case "white": fill(255);
+                break;
+            case "black": fill(0);
+                break;
+            default: fill(0);
+        }
+        var iSize = parseInt(mPos[3]);
+        console.log(iSize);
+        ellipse(mPos[1], mPos[2], iSize, iSize);
+    };
+
+    function setup() {
+        var canvas = createCanvas(600, 600);
+        canvas.style('border-style', 'solid');
+        canvas.style('border-width', '5px');
+        background(255);
+
+        sizeSlider = createSlider(20, 100, 20);
+        sizeSlider.position(20, 750);
+
+        btnRed = createButton('Red');
+        btnRed.size(100, 100);
+        btnRed.position(620, 10);
+        btnRed.mousePressed(fillRed);
+        btnRed.style('background', 'red');
+        btnRed.style('color', 'black');
+        btnRed.style('font-size', '22px');
+
+        btnGreen = createButton('Green');
+        btnGreen.size(100, 100);
+        btnGreen.position(620, 120);
+        btnGreen.mousePressed(fillGreen);
+        btnGreen.style('background', 'green');
+        btnGreen.style('color', 'black');
+        btnGreen.style('font-size', '22px');
+
+        btnBlue = createButton('Blue');
+        btnBlue.size(100, 100);
+        btnBlue.position(620, 230);
+        btnBlue.mousePressed(fillBlue);
+        btnBlue.style('background', 'blue');
+        btnBlue.style('color', 'black');
+        btnBlue.style('font-size', '22px');
+
+        btnYellow = createButton('Yellow');
+        btnYellow.size(100, 100);
+        btnYellow.position(620, 340);
+        btnYellow.mousePressed(fillYellow);
+        btnYellow.style('background', 'yellow');
+        btnYellow.style('color', 'black');
+        btnYellow.style('font-size', '22px');
+
+        btnPurple = createButton('Purple');
+        btnPurple.size(100, 100);
+        btnPurple.position(620, 450);
+        btnPurple.mousePressed(fillPurple);
+        btnPurple.style('background', 'purple');
+        btnPurple.style('color', 'black');
+        btnPurple.style('font-size', '22px');
+
+        btnWhite = createButton('White');
+        btnWhite.size(100, 100);
+        btnWhite.position(620, 560);
+        btnWhite.mousePressed(fillWhite);
+        btnWhite.style('background', 'white');
+        btnWhite.style('color', 'black');
+        btnWhite.style('font-size', '22px');
+
+        btnBlack = createButton('Black');
+        btnBlack.size(100, 100);
+        btnBlack.position(620, 670);
+        btnBlack.mousePressed(fillBlack);
+        btnBlack.style('background', 'black');
+        btnBlack.style('color', 'white');
+        btnBlack.style('font-size', '22px');
+    }
+
+    function mouseDragged() {
+        noStroke();
+        ellipse(mouseX, mouseY, sizeSlider.value(), sizeSlider.value());
+        strSize = String(sizeSlider.value());
+        socket.send(strColour + " " + mouseX + " " + mouseY + " " + strSize);
+    }
+
+    function fillRed() {
+        strColour = "red";
+        fill(255, 0, 0);
+    }
+
+    function fillGreen() {
+        strColour = "green";
+        fill(0, 255, 0);
+    }
+
+    function fillBlue() {
+        strColour = "blue";
+        fill(0, 0, 255);
+    }
+
+    function fillYellow() {
+        strColour = "yellow";
+        fill(255, 255, 0);
+    }
+
+    function fillPurple() {
+        strColour = "purple";
+        fill(204, 0, 204);
+    }
+
+    function fillWhite() {
+        strColour = "white";
+        fill(255);
+    }
+
+    function fillBlack() {
+        strColour = "black"; 
+        fill(0);
+    }
+    </script>
+</body>
